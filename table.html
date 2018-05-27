@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+    <link rel="stylesheet" href="./assets/css/index.css">
+    <style>
+        #app {
+            width: 70%;
+            position: absolute;
+            transform: translate(-50%, -50%);
+            left: 50%;
+            top: 50%;
+        }
+
+        .el-table th {
+            color: #62717E;
+            background: rgb(237, 241, 245);
+        }
+    </style>
+</head>
+
+<body>
+    <div id="app" v-loading="isTableLoading">
+        <el-row :gutter="20">
+            <el-col :span="12">
+                <el-input placeholder="Enter here..." v-model="serachInputValue">
+                    <template slot="prepend">Wowcher Code</template>
+                    <el-button slot="append" type="primary" icon="el-icon-search" @click="handleClick">Track</el-button>
+                </el-input>
+            </el-col>
+            <el-col :span="4">
+                    <el-button   style="margin-left:60px;"type="success">Tracking Number:{{trackingNumber}} </el-button>
+            </el-col>
+            <br>
+            <br>
+            <br>
+            <el-col>
+                <el-table border :data="tableData">
+                    <el-table-column width="100px" label="Index" prop="index"></el-table-column>
+                    <el-table-column label="Time" prop="time"></el-table-column>
+                    <el-table-column :min-width="200" label="Activity" prop="status"></el-table-column>
+                    <el-table-column  label="Location" prop="location"></el-table-column>
+                </el-table>
+            </el-col>
+        </el-row>
+    </div>
+    <script src="./assets/js/vue.js"></script>
+    <script src="./assets/js/axios.js"></script>
+    <script src="./assets/js/index.js"></script>
+    <script>
+        var code = location.search.split('=')[1];
+        var vue = new Vue({
+            el: '#app',
+            data: {
+                tableData: [],
+                countryCode: '',
+                trackingNumber: '',
+                isTableLoading: true,
+                serachInputValue: ''
+            },
+            methods: {
+                handleClick: function () {
+                    this.isTableLoading = true;
+                    axios({
+                        url: 'http://track.buysmth.com:8000/data-server/wowcher/ordertracking/wc/query',
+                        method: 'get',
+                        params: {
+                            wowcherCode: this.serachInputValue
+                        }
+                    }).then((res) => {
+                        this.tableData = res.data.trackList;
+                        this.countryCode = res.data.countryCode;
+                        this.trackingNumber = res.data.trackingNumber;
+                        this.isTableLoading = false;
+                    })
+                }
+            },
+            created() {
+                axios({
+                    url: 'http://track.buysmth.com:8000/data-server/wowcher/ordertracking/wc/query',
+                    method: 'get',
+                    params: {
+                        wowcherCode: code
+                    }
+                }).then((res) => {
+                    this.tableData = res.data.trackList;
+                    this.countryCode = res.data.countryCode;
+                    this.trackingNumber = res.data.trackingNumber;
+                    this.isTableLoading = false;
+                })
+            }
+        })
+    </script>
+</body>
+
+</html>
